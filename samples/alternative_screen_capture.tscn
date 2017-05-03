@@ -1,0 +1,93 @@
+[gd_scene load_steps=3 format=1]
+
+[ext_resource path="res://samples/alternative_screen_capture/particles.tscn" type="PackedScene" id=1]
+
+[sub_resource type="GDScript" id=1]
+
+resource/name = "general"
+script/source = "extends Node2D
+
+func _on_capture_docs_pressed():
+	get_viewport().queue_screen_capture()
+
+	# Let two frames pass to make sure the screen was captured
+	yield(get_tree(), \"idle_frame\")
+	yield(get_tree(), \"idle_frame\")
+
+	# Retrieve the captured image
+	var img = get_viewport().get_screen_capture()
+	display_capture(img)
+
+func _on_capture_easy_pressed():
+	get_viewport().queue_screen_capture()
+
+	VisualServer.draw()
+
+	var img = get_viewport().get_screen_capture()
+	display_capture(img)
+
+func display_capture(img):
+	var tex = ImageTexture.new()
+	tex.create_from_image(img)
+	# Set it to the capture node
+	get_node(\"frame\").set_texture(tex)
+"
+
+[node name="alternative_screen_capture" type="Node2D"]
+
+script/script = SubResource( 1 )
+
+[node name="Node" parent="." instance=ExtResource( 1 )]
+
+[node name="capture_docs" type="Button" parent="."]
+
+rect/scale = Vector2( 3, 3 )
+focus/ignore_mouse = false
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 51.0
+margin/top = 684.0
+margin/right = 201.0
+margin/bottom = 719.0
+toggle_mode = false
+enabled_focus_mode = 2
+shortcut = null
+text = "Capture! (as per docs)"
+flat = false
+
+[node name="capture_easy" type="Button" parent="."]
+
+rect/scale = Vector2( 3, 3 )
+focus/ignore_mouse = false
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 51.0
+margin/top = 823.0
+margin/right = 201.0
+margin/bottom = 858.0
+toggle_mode = false
+enabled_focus_mode = 2
+shortcut = null
+text = "Capture! (alternative)"
+flat = false
+
+[node name="frame" type="TextureFrame" parent="."]
+
+focus/ignore_mouse = true
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 575.0
+margin/top = 643.0
+margin/right = 906.0
+margin/bottom = 968.0
+expand = true
+stretch_mode = 0
+
+[connection signal="pressed" from="capture_docs" to="." method="_on_capture_docs_pressed"]
+
+[connection signal="pressed" from="capture_easy" to="." method="_on_capture_easy_pressed"]
+
+

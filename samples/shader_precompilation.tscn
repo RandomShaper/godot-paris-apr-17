@@ -1,0 +1,101 @@
+[gd_scene load_steps=6 format=1]
+
+[ext_resource path="res://icon.png" type="Texture" id=1]
+
+[sub_resource type="GDScript" id=6]
+
+resource/name = "general"
+script/source = "extends Node2D
+
+var materials = []
+var last_time = OS.get_ticks_msec()
+
+func _ready():
+	var sprite = get_node(\"icon\")
+	sprite.queue_free()
+
+	for i in range(5000):
+		var mtl = sprite.get_material().duplicate()
+		mtl.set_shader(mtl.get_shader().duplicate())
+		materials.append(mtl)
+		add_child(sprite.duplicate())
+		
+	#precompile_shaders()
+	
+	set_process(true)
+	
+# Instead of using the profiler or the delta,
+# we measure the true time elapsed because
+# the engine caps the delta at 8 * target frame time
+# so we wouldn't know the whole terrible truth
+func _process(delta):
+	if abs(OS.get_frames_drawn() - 200) < 5:
+		prints(OS.get_frames_drawn(), OS.get_ticks_msec() - last_time)
+	last_time = OS.get_ticks_msec()
+
+func add_icon_deep_copy():
+	var copy = get_node(\"icon\").duplicate()
+	var mtl = copy.get_material().duplicate()
+	var shd = mtl.get_shader().duplicate()
+	mtl.set_shader(shd)
+	copy.set_material(mtl)
+	add_child(copy)
+
+func precompile_shaders():
+	var dummies = []
+	for mtl in materials:
+		var dummy = Polygon2D.new()
+		dummy.set_polygon([ Vector2(0, 0), Vector2(100, 0), Vector2(0, 100) ])
+		dummy.set_material(mtl)
+		add_child(dummy)
+		dummy.notification(NOTIFICATION_DRAW)
+		dummies.append(dummy)
+	VisualServer.draw()
+	for dummy in dummies:
+		dummy.free()
+"
+
+[sub_resource type="CanvasItemShader" id=3]
+
+_code = {
+"fragment": "vec4 sample = tex(TEXTURE, UV);
+COLOR = vec4(0, 0.5, sample.b, sample.a);",
+"fragment_ofs": 0,
+"light": "",
+"light_ofs": 0,
+"vertex": "",
+"vertex_ofs": 0
+}
+
+[sub_resource type="CanvasItemMaterial" id=4]
+
+shader/shader = SubResource( 3 )
+shader/shading_mode = 0
+
+[sub_resource type="GDScript" id=5]
+
+resource/name = "icon_2"
+script/source = "extends Sprite
+
+func _ready():
+	set_process(true)
+
+func _process(delta):
+	if OS.get_frames_drawn() == 200:
+		var idx = get_index()
+		set_material(get_parent().materials[idx])
+"
+
+[node name="shader_precompilation" type="Node2D"]
+
+transform/scale = Vector2( 3, 3 )
+script/script = SubResource( 6 )
+
+[node name="icon" type="Sprite" parent="."]
+
+material/material = SubResource( 4 )
+transform/pos = Vector2( 138.951, 146.247 )
+texture = ExtResource( 1 )
+script/script = SubResource( 5 )
+
+

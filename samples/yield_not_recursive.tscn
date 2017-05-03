@@ -1,0 +1,113 @@
+[gd_scene load_steps=5 format=1]
+
+[ext_resource path="res://icon.png" type="Texture" id=1]
+
+[sub_resource type="GDScript" id=1]
+
+resource/name = "hero"
+script/source = "extends Sprite
+
+onready var enemy = get_node(\"../enemy\")
+
+func _on_bullet_shot():
+	wait_until_enemy_dead()
+	#yield(enemy, \"dead\") # RIGHT point for yield
+	celebrate()
+	
+func wait_until_enemy_dead():
+	yield(enemy, \"dead\") # WRONG point for yield
+	pass
+
+func celebrate():
+	set_modulate(Color(1.0, 1.0, 0.0))
+"
+
+[sub_resource type="GDScript" id=2]
+
+resource/name = "enemy"
+script/source = "extends Sprite
+
+signal dead
+
+onready var bullet = get_node(\"../bullet\")
+
+func _ready():
+	set_process(true)
+	
+func _process(delta):
+	if bullet.get_pos().x >= get_pos().x:
+		emit_signal(\"dead\")
+		bullet.queue_free()
+		queue_free()
+"
+
+[sub_resource type="GDScript" id=3]
+
+resource/name = "bullet"
+script/source = "extends Polygon2D
+
+signal shot
+
+func _on_fire_pressed():
+	emit_signal(\"shot\")
+	set_process(true)
+	
+func _process(delta):
+	translate(Vector2(delta * 100, 0))
+"
+
+[node name="yield_not_recursive" type="Node2D"]
+
+transform/scale = Vector2( 2, 2 )
+
+[node name="hero" type="Sprite" parent="."]
+
+transform/pos = Vector2( 104.174, 245.13 )
+texture = ExtResource( 1 )
+script/script = SubResource( 1 )
+
+[node name="enemy" type="Sprite" parent="."]
+
+transform/pos = Vector2( 350.526, 240.955 )
+texture = ExtResource( 1 )
+modulate = Color( 1, 0.191406, 0.191406, 1 )
+script/script = SubResource( 2 )
+
+[node name="fire" type="Button" parent="."]
+
+rect/scale = Vector2( 2, 2 )
+focus/ignore_mouse = false
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 56.0
+margin/top = 313.0
+margin/right = 114.0
+margin/bottom = 343.0
+toggle_mode = false
+enabled_focus_mode = 2
+shortcut = null
+text = "Fire!"
+flat = false
+
+[node name="bullet" type="Polygon2D" parent="."]
+
+transform/pos = Vector2( 155.327, 245.517 )
+polygon = Vector2Array( 0, -10, 10, 0, 0, 10, -10, 0 )
+uv = Vector2Array(  )
+color = Color( 1, 1, 1, 1 )
+vertex_colors = ColorArray(  )
+offset = Vector2( 0, 0 )
+texture/texture = null
+texture/offset = Vector2( 0, 0 )
+texture/scale = Vector2( 1, 1 )
+texture/rotation = 0.0
+invert/enable = false
+invert/border = 100.0
+script/script = SubResource( 3 )
+
+[connection signal="pressed" from="fire" to="bullet" method="_on_fire_pressed" flags=6]
+
+[connection signal="shot" from="bullet" to="hero" method="_on_bullet_shot"]
+
+

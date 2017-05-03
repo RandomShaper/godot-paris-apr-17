@@ -1,0 +1,111 @@
+[gd_scene load_steps=3 format=1]
+
+[ext_resource path="res://icon.png" type="Texture" id=1]
+
+[sub_resource type="GDScript" id=1]
+
+resource/name = "general"
+script/source = "extends Node2D
+
+onready var icon = get_node(\"icon\")
+
+func _on_remove_pressed():
+	print(\"BEFORE\")
+	print_stats()
+
+	remove_child(get_node(\"icon\"))
+	
+	print(\"AFTER\")
+	print_stats()
+
+func _on_unref_pressed():
+	print(\"BEFORE\")
+	print_stats()
+
+	icon = null
+	
+	print(\"AFTER\")
+	print_stats()
+
+func _on_free_pressed():
+	print(\"BEFORE\")
+	print_stats()
+
+	get_node(\"icon\").free()
+	
+	print(\"AFTER\")
+	print_stats()
+
+func print_stats():
+	print(\"Object count: %d\" % Performance.get_monitor(Performance.OBJECT_COUNT))
+	print(\"Resource count: %d\" % Performance.get_monitor(Performance.OBJECT_RESOURCE_COUNT))
+"
+
+[node name="leakage_of_nodes" type="Node2D"]
+
+transform/scale = Vector2( 3, 3 )
+script/script = SubResource( 1 )
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="icon" type="Sprite" parent="."]
+
+transform/pos = Vector2( 169.945, 47.3543 )
+texture = ExtResource( 1 )
+
+[node name="remove" type="Button" parent="."]
+
+focus/ignore_mouse = false
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 98.0
+margin/top = 111.0
+margin/right = 162.0
+margin/bottom = 131.0
+toggle_mode = false
+enabled_focus_mode = 2
+shortcut = null
+text = "Remove"
+flat = false
+
+[node name="unref" type="Button" parent="."]
+
+focus/ignore_mouse = false
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 175.0
+margin/top = 111.0
+margin/right = 239.0
+margin/bottom = 131.0
+toggle_mode = false
+enabled_focus_mode = 2
+shortcut = null
+text = "Unref"
+flat = false
+
+[node name="free" type="Button" parent="."]
+
+focus/ignore_mouse = false
+focus/stop_mouse = true
+size_flags/horizontal = 2
+size_flags/vertical = 2
+margin/left = 98.0
+margin/top = 159.0
+margin/right = 162.0
+margin/bottom = 179.0
+toggle_mode = false
+enabled_focus_mode = 2
+shortcut = null
+text = "Free"
+flat = false
+
+[connection signal="pressed" from="remove" to="." method="_on_remove_pressed"]
+
+[connection signal="pressed" from="unref" to="." method="_on_unref_pressed"]
+
+[connection signal="pressed" from="free" to="." method="_on_free_pressed"]
+
+
